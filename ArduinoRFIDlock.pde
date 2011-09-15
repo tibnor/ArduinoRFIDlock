@@ -20,13 +20,17 @@ int bytePos = 0;
 int incomingByte=0;
 IdStorage theStorage;
 
+#define STATE_ADD_USER 0
+#define STATE_DOOR_LOCK 1
+byte state = STATE_ADD_USER;
+
 void setup()
 {
   Serial.begin(9600);//For access to serial monitor channel
   Serial.println("Bring an RFID tag near the reader...");
   mySerialPort.begin(9600);
   theStorage = IdStorage();
-  
+
 };
 
 void loop()
@@ -41,26 +45,62 @@ void loop()
     }
     if (incomingByte==3) {
       bytePos = 0;
+
       int userType = theStorage.typeOfUser(id);
       Serial.print("Type of user: ");
       switch (userType) {
         case (USER):
-          Serial.println("USER");
-          break;
+        Serial.println("USER");
+        break;
         case (ADMIN):
-          Serial.println("ADMIN");
-          break;
+        Serial.println("ADMIN");
+        break;
         case (UNKNOWN):
-          Serial.println("UNKNOWN");
-          break;
+        Serial.println("UNKNOWN");
+        break;
       }
-      theStorage.storeId(id);
-      theStorage.printIds();
+      
+      if (state == STATE_ADD_USER){
+        if (userType == UNKNOWN)
+          theStorage.storeId(id);
+        else if (userType == ADMIN){
+          state = STATE_DOOR_LOCK;
+          Serial.println("State: door lock");
+        }
+
+        theStorage.printIds();
+      } 
+      else {
+        switch (userType) {
+          case (USER):
+          togleDoorLock();
+          break;
+          case (ADMIN):
+          state = STATE_ADD_USER;
+          Serial.println("State: add user");
+          break;
+          case (UNKNOWN):
+          Serial.println("Access denied!");
+          break;
+        }
+      }
 
     }
   }
   delay(10);
 }
+
+void togleDoorLock() {
+   static boolean doorIsOpen = true;
+  if (doorIsOpen)
+    Serial.println("Locking door");
+  else 
+    Serial.println("Opening door");
+    
+  doorIsOpen = !doorIsOpen;
+}
+
+
 
 
 
