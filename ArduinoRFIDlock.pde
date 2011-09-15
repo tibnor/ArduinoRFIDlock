@@ -1,7 +1,9 @@
 
 #include <NewSoftSerial.h>
+#include <Servo.h>
 #include "IdStorage.h"
 
+Servo myservo;
 
 const int SerInToArdu=2; //Defines pin data passes to Arduino over from RFID reader
 const int SerOutFrmArdu=3; //Not used, but
@@ -30,6 +32,8 @@ void setup()
   Serial.println("Bring an RFID tag near the reader...");
   mySerialPort.begin(9600);
   theStorage = IdStorage();
+  myservo.attach(9);
+  myservo.write(90);
 
 };
 
@@ -59,7 +63,7 @@ void loop()
         Serial.println("UNKNOWN");
         break;
       }
-      
+
       if (state == STATE_ADD_USER){
         if (userType == UNKNOWN)
           theStorage.storeId(id);
@@ -91,14 +95,19 @@ void loop()
 }
 
 void togleDoorLock() {
-   static boolean doorIsOpen = true;
-  if (doorIsOpen)
+  static boolean doorIsOpen = true;
+  if (doorIsOpen) {
     Serial.println("Locking door");
-  else 
+    myservo.write(0);
+  } 
+  else {
     Serial.println("Opening door");
-    
+    myservo.write(180);
+  }
+
   doorIsOpen = !doorIsOpen;
 }
+
 
 
 
