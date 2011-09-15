@@ -18,7 +18,7 @@ boolean IdStorage::storeId(byte id[12]) {
     return true;
   }
   
-  if(typeOfUser(id)==UKNOWN){
+  if(typeOfUser(id)==UNKNOWN){
 
   //All Ok, store id
   for (int i = 0; i < 12; i = i + 1){
