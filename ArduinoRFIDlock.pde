@@ -41,8 +41,22 @@ void loop()
     }
     if (incomingByte==3) {
       bytePos = 0;
+      int userType = theStorage.typeOfUser(id);
+      Serial.print("Type of user: ");
+      switch (userType) {
+        case (USER):
+          Serial.println("USER");
+          break;
+        case (ADMIN):
+          Serial.println("ADMIN");
+          break;
+        case (UNKNOWN):
+          Serial.println("UNKNOWN");
+          break;
+      }
       theStorage.storeId(id);
       theStorage.printIds();
+
     }
   }
   delay(10);
