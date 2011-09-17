@@ -1,6 +1,6 @@
 
 #include <NewSoftSerial.h>
-#include <Servo.h>
+#include <Servo2.h>
 #include "IdStorage.h"
 
 Servo myservo;
@@ -77,7 +77,7 @@ void loop()
       else {
         switch (userType) {
           case (USER):
-          togleDoorLock();
+          toggleDoorLock();
           break;
           case (ADMIN):
           state = STATE_ADD_USER;
@@ -94,18 +94,40 @@ void loop()
   delay(10);
 }
 
-void togleDoorLock() {
+void toggleDoorLock() {
   static boolean doorIsOpen = true;
   if (doorIsOpen) {
     Serial.println("Locking door");
-    myservo.write(0);
+    //myservo.write(5);
+    turnCW(600);
   } 
   else {
     Serial.println("Opening door");
-    myservo.write(180);
+    turnCCW(600);
+    //myservo.write(175);
   }
 
   doorIsOpen = !doorIsOpen;
+}
+
+void turnCW(int waitTime) {
+  //myservo.attach(9);
+  //myservo.writeMicroseconds(2000);
+  myservo.write(180);
+  delay(waitTime);
+  //myservo.writeMicroseconds(1500);
+  myservo.write(90);
+  //myservo.detach();
+}
+
+void turnCCW(int waitTime) {
+  //myservo.attach(9);
+  //myservo.writeMicroseconds(1000);
+  myservo.write(0);
+  delay(waitTime);
+  //myservo.writeMicroseconds(1500);
+  myservo.write(90);
+  //myservo.detach();
 }
 
 
