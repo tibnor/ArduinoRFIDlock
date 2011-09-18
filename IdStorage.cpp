@@ -1,5 +1,5 @@
 #include "IdStorage.h"
-//#include <EPROM.h>
+#include <EEPROM.h>
 
 
 IdStorage::IdStorage() {
@@ -81,12 +81,32 @@ byte IdStorage::typeOfUser(byte tag[ID_SIZE]) {
     return UNKNOWN;
 };
 
-void IdStorage::loadEPROM() {
+void IdStorage::loadEEPROM() {
+  //Read number of IDs in first byte
+  idPos = EEPROM.read(0);
   
+  //Read IDs
+  int address = 1;
+  for (int i = 0; i < idPos; i = i + 1) {  
+    for (int j = 0; j < ID_SIZE; j = j + 1) {
+      ids[i][j] = EEPROM.read(address);
+      address = address + 1;
+    }
+  }
 }
 
-void IdStorage::storeEPROM() {  
-
+void IdStorage::storeEEPROM() {  
+  //Store number of IDs in first byte
+  EEPROM.write(0,idPos);
+  
+  //Store IDs
+  int address = 1;
+  for (int i = 0; i < idPos; i = i + 1) {  
+    for (int j = 0; j < ID_SIZE; j = j + 1) {
+      EEPROM.write(address,ids[i][j]);
+      address = address + 1;
+    }
+  }
 }
 
 

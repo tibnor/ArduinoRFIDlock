@@ -19,8 +19,8 @@ class IdStorage {
     int idPos;
     byte ids[20][ID_SIZE];
     byte idAdmin[ID_SIZE];
-    void storeEPROM();
-    void loadEPROM();
+    void storeEEPROM();
+    void loadEEPROM();
 };
 
 #endif

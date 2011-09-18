@@ -1,5 +1,6 @@
 
 #include <NewSoftSerial.h>
+#include <EEPROM.h>
 #include <Servo2.h>
 #include "IdStorage.h"
 
