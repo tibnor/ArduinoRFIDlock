@@ -17,7 +17,7 @@ NewSoftSerial mySerialPort(SerInToArdu,SerOutFrmArdu);
 //     programming, and for the output sent to the serial
 //     monitor.
 
-byte id[12];
+byte id[ID_SIZE];
 int bytePos = 0;
 int incomingByte=0;
 IdStorage theStorage;

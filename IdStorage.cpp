@@ -1,5 +1,6 @@
 #include "IdStorage.h"
 
+
 IdStorage::IdStorage() {
   //TODO: Read from EPROM
   idPos = 0;
@@ -17,16 +18,16 @@ boolean IdStorage::storeId(byte id[12]) {
     }
     return true;
   }
-  
+
   if(typeOfUser(id)==UNKNOWN){
 
-  //All Ok, store id
-  for (int i = 0; i < 12; i = i + 1){
-    ids[idPos][i] = id[i];
-  }
-  idPos = idPos + 1;    
-  //TODO: Store in EPROM
-  return true;
+    //All Ok, store id
+    for (int i = 0; i < 12; i = i + 1){
+      ids[idPos][i] = id[i];
+    }
+    idPos = idPos + 1;    
+    //TODO: Store in EPROM
+    return true;
   }
   else 
     return false;
@@ -38,7 +39,7 @@ void IdStorage::printIds() {
     Serial.print(idAdmin[j],BYTE);
   }
   Serial.println();
-  
+
   //Print users
   for (int i = 0; i < idPos; i = i + 1) {  
     Serial.print("Id");
@@ -78,5 +79,13 @@ byte IdStorage::typeOfUser(byte tag[12]) {
   else
     return UNKNOWN;
 };
+
+void IdStorage::loadEPROM() {
+  
+}
+
+void IdStorage::storeEPROM() {  
+  
+}
 
 
