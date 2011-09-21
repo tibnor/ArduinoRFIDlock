@@ -84,29 +84,60 @@ byte IdStorage::typeOfUser(byte tag[ID_SIZE]) {
 void IdStorage::loadEEPROM() {
   //Read number of IDs in first byte
   idPos = EEPROM.read(0);
-  
+  if (idPos == 0) {
+    idAdmin[0] = 0x00;
+    return;
+  }
+  idPos -= 1;
   //Read IDs
   int address = 1;
-  for (int i = 0; i < idPos; i = i + 1) {  
-    for (int j = 0; j < ID_SIZE; j = j + 1) {
-      ids[i][j] = EEPROM.read(address);
-      address = address + 1;
+  for (int j = 0; j < ID_SIZE; j = j + 1) {
+    idAdmin[j] = EEPROM.read(address);
+    address ++;
+  }
+
+  if(idPos > 0) {
+    for (int i = 1; i < idPos+1; i++) {  
+      for (int j = 0; j < ID_SIZE; j = j + 1) {
+        ids[i][j] = EEPROM.read(address);
+        address ++;
+      }
     }
   }
 }
 
 void IdStorage::storeEEPROM() {  
   //Store number of IDs in first byte
-  EEPROM.write(0,idPos);
+  if (idAdmin[0] == 0x00) {
+    EEPROM.write(0,0x00);
+    return;
+  }
   
+  EEPROM.write(0,idPos+1);
   //Store IDs
   int address = 1;
-  for (int i = 0; i < idPos; i = i + 1) {  
-    for (int j = 0; j < ID_SIZE; j = j + 1) {
-      EEPROM.write(address,ids[i][j]);
-      address = address + 1;
+  for (int j = 0; j < ID_SIZE; j = j + 1) {
+    EEPROM.write(address,idAdmin[j]);
+    address ++;
+  }
+  
+  // Save users
+  if (idPos > 0) {
+    for (int i = 0; i < idPos; i = i + 1) {  
+      for (int j = 0; j < ID_SIZE; j = j + 1) {
+        EEPROM.write(address,ids[i][j]);
+        address ++;
+      }
     }
   }
 }
+
+void IdStorage::clear() {
+  idAdmin[0] = 0x00;
+  idPos = 0;
+}
+
+
+
 
 

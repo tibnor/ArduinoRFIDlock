@@ -15,12 +15,14 @@ class IdStorage {
     boolean TagMatch(byte sFirst[ID_SIZE],byte sSecond[ID_SIZE]);
     void printIds();
     byte typeOfUser(byte tag[ID_SIZE]);
-  private:
-    int idPos;
-    byte ids[20][ID_SIZE];
-    byte idAdmin[ID_SIZE];
+    void clear();
     void storeEEPROM();
     void loadEEPROM();
+  private:
+    byte idPos;
+    byte ids[20][ID_SIZE];
+    byte idAdmin[ID_SIZE];
+
 };
 
 #endif

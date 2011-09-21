@@ -2,7 +2,15 @@
 #include <NewSoftSerial.h>
 #include <EEPROM.h>
 #include <Servo2.h>
+#ifndef TEST
+#define TEST
+#include <ArduinoTestSuite.h>
+#include "TestIdStorage.h"
+#endif
+
 #include "IdStorage.h"
+
+
 
 Servo myservo;
 
@@ -35,6 +43,8 @@ void setup()
   theStorage = IdStorage();
   myservo.attach(9);
   myservo.write(90);
+  
+  IdStorageTest test;
 
 };
 
