@@ -3,9 +3,10 @@
 
 
 IdStorage::IdStorage() {
-  //TODO: Read from EPROM
-  idPos = 0;
-  idAdmin[0] = 0x00;
+  loadEEPROM();
+  // First time running
+  Serial.println("Clearing memory");
+  clear();
 }
 
 boolean IdStorage::storeId(byte id[ID_SIZE]) {
@@ -27,7 +28,7 @@ boolean IdStorage::storeId(byte id[ID_SIZE]) {
       ids[idPos][i] = id[i];
     }
     idPos = idPos + 1;    
-    //TODO: Store in EPROM
+    storeEEPROM();
     return true;
   }
   else 
@@ -52,6 +53,7 @@ void IdStorage::printIds() {
     Serial.println(", ");
   }
   Serial.println("Done");
+  
 }
 
 boolean IdStorage::TagMatch(byte sFirst[ID_SIZE],byte sSecond[ID_SIZE])

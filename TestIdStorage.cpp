@@ -17,7 +17,7 @@ void IdStorageTest::testSaveUserLoad() {
 
   theStorageTest.storeId(admin);
   theStorageTest.storeId(user);
-  theStorageTest.storeEEPROM();
+  //theStorageTest.storeEEPROM();
     theStorageTest.clear();
   theStorageTest.loadEEPROM();
   byte typeUser = theStorageTest.typeOfUser(user);
@@ -30,8 +30,8 @@ void IdStorageTest::testSaveAdminLoad() {
   theStorageTest.storeId(admin);
   theStorageTest.storeId(user);
 
-  theStorageTest.storeEEPROM();
-    theStorageTest.clear();
+  //theStorageTest.storeEEPROM();
+  theStorageTest.clear();
   theStorageTest.loadEEPROM();
   byte typeUser = theStorageTest.typeOfUser(admin);
   ATS_PrintTestStatus("test save/load admin", typeUser == 2);

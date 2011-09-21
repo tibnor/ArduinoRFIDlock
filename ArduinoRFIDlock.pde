@@ -2,11 +2,12 @@
 #include <NewSoftSerial.h>
 #include <EEPROM.h>
 #include <Servo2.h>
-#ifndef TEST
+/*#ifndef TEST
 #define TEST
 #include <ArduinoTestSuite.h>
 #include "TestIdStorage.h"
 #endif
+*/
 
 #include "IdStorage.h"
 
@@ -29,6 +30,7 @@ NewSoftSerial mySerialPort(SerInToArdu,SerOutFrmArdu);
 byte id[ID_SIZE];
 int bytePos = 0;
 int incomingByte=0;
+int buttonPin = 2; // Digital pin for button
 IdStorage theStorage;
 
 #define STATE_ADD_USER 0
@@ -43,8 +45,8 @@ void setup()
   theStorage = IdStorage();
   myservo.attach(9);
   myservo.write(90);
-  
-  IdStorageTest test;
+  pinMode(buttonPin,INPUT);
+  //IdStorageTest test;
 
 };
 
@@ -102,6 +104,8 @@ void loop()
 
     }
   }
+  if (isButtonPushed())
+    toggleDoorLock();
   delay(10);
 }
 
@@ -143,7 +147,9 @@ void turnCCW(int waitTime) {
 
 
 
-
+boolean isButtonPushed() {
+  return digitalRead(buttonPin) == LOW;
+}
 
 
 
