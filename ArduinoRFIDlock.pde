@@ -30,7 +30,7 @@ NewSoftSerial mySerialPort(SerInToArdu,SerOutFrmArdu);
 byte id[ID_SIZE];
 int bytePos = 0;
 int incomingByte=0;
-int buttonPin = 2; // Digital pin for button
+int buttonPin = 4; // Digital pin for button
 IdStorage theStorage;
 
 #define STATE_ADD_USER 0
