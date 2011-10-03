@@ -2,12 +2,12 @@
 #include <NewSoftSerial.h>
 #include <EEPROM.h>
 #include <Servo2.h>
-#ifndef TEST
+/*#ifndef TEST
 #define TEST
 #include <ArduinoTestSuite.h>
 #include "TestIdStorage.h"
 #endif
-
+*/
 #include "IdStorage.h"
 
 
@@ -18,6 +18,7 @@ const int SerInToArdu=2; //Defines pin data passes to Arduino over from RFID rea
 const int SerOutFrmArdu=3; //Not used, but
 //"fills" a parameter in the set up of
 //mySerialPort
+int buttonPin = 4; // Digital pin for button
 
 NewSoftSerial mySerialPort(SerInToArdu,SerOutFrmArdu);
 //  Creates serial port for RFID reader to be attached to.
@@ -31,9 +32,10 @@ int bytePos = 0;
 int incomingByte=0;
 IdStorage theStorage;
 
+
 #define STATE_ADD_USER 0
 #define STATE_DOOR_LOCK 1
-byte state = STATE_ADD_USER;
+byte state = STATE_DOOR_LOCK;
 
 void setup()
 {
@@ -43,8 +45,11 @@ void setup()
   theStorage = IdStorage();
   myservo.attach(9);
   myservo.write(90);
+  pinMode(buttonPin,INPUT);
   
-  IdStorageTest test;
+  //theStorage.clear();
+  theStorage.printIds();
+  //IdStorageTest test;
 
 };
 
@@ -102,6 +107,10 @@ void loop()
 
     }
   }
+  
+    if (isButtonPushed())
+     toggleDoorLock();
+
   delay(10);
 }
 
@@ -141,6 +150,9 @@ void turnCCW(int waitTime) {
   //myservo.detach();
 }
 
+boolean isButtonPushed() {
+ return digitalRead(buttonPin) == LOW;
+}
 
 
 
