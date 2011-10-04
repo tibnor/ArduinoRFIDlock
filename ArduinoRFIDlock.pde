@@ -18,7 +18,7 @@ const int SerInToArdu=2; //Defines pin data passes to Arduino over from RFID rea
 const int SerOutFrmArdu=3; //Not used, but
 //"fills" a parameter in the set up of
 //mySerialPort
-int buttonPin = 4; // Digital pin for button
+int buttonPin = 8; // Digital pin for button
 
 NewSoftSerial mySerialPort(SerInToArdu,SerOutFrmArdu);
 //  Creates serial port for RFID reader to be attached to.
@@ -94,6 +94,7 @@ void loop()
         switch (userType) {
           case (USER):
           toggleDoorLock();
+          mySerialPort.flush();
           delay(1000);
           break;
           case (ADMIN):
@@ -109,7 +110,7 @@ void loop()
     }
   }
   
-    if (isButtonPushed())
+   if (isButtonPushed())
      toggleDoorLock();
 
   delay(10);
@@ -152,7 +153,7 @@ void turnCCW(int waitTime) {
 }
 
 boolean isButtonPushed() {
- return digitalRead(buttonPin) == LOW;
+ return digitalRead(buttonPin) == HIGH;
 }
 
 
