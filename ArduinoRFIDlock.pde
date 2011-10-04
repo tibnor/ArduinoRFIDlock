@@ -94,6 +94,7 @@ void loop()
         switch (userType) {
           case (USER):
           toggleDoorLock();
+          delay(1000);
           break;
           case (ADMIN):
           state = STATE_ADD_USER;
@@ -119,11 +120,11 @@ void toggleDoorLock() {
   if (doorIsOpen) {
     Serial.println("Locking door");
     //myservo.write(5);
-    turnCW(600);
+    turnCW(800);
   } 
   else {
     Serial.println("Opening door");
-    turnCCW(600);
+    turnCCW(800);
     //myservo.write(175);
   }
 
