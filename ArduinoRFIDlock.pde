@@ -110,8 +110,8 @@ void loop()
     }
   }
   
-   if (isButtonPushed())
-     toggleDoorLock();
+  // if (isButtonPushed())
+  //   toggleDoorLock();
 
   delay(10);
 }
