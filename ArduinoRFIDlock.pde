@@ -8,7 +8,6 @@
 #include "TestIdStorage.h"
 #endif
 */
-
 #include "IdStorage.h"
 
 
@@ -19,6 +18,7 @@ const int SerInToArdu=2; //Defines pin data passes to Arduino over from RFID rea
 const int SerOutFrmArdu=3; //Not used, but
 //"fills" a parameter in the set up of
 //mySerialPort
+int buttonPin = 8; // Digital pin for button
 
 NewSoftSerial mySerialPort(SerInToArdu,SerOutFrmArdu);
 //  Creates serial port for RFID reader to be attached to.
@@ -30,12 +30,12 @@ NewSoftSerial mySerialPort(SerInToArdu,SerOutFrmArdu);
 byte id[ID_SIZE];
 int bytePos = 0;
 int incomingByte=0;
-int buttonPin = 2; // Digital pin for button
 IdStorage theStorage;
+
 
 #define STATE_ADD_USER 0
 #define STATE_DOOR_LOCK 1
-byte state = STATE_ADD_USER;
+byte state = STATE_DOOR_LOCK;
 
 void setup()
 {
@@ -46,6 +46,8 @@ void setup()
   myservo.attach(9);
   myservo.write(90);
   pinMode(buttonPin,INPUT);
+  //theStorage.clear();
+  theStorage.printIds();
   //IdStorageTest test;
 
 };
@@ -91,6 +93,8 @@ void loop()
         switch (userType) {
           case (USER):
           toggleDoorLock();
+          mySerialPort.flush();
+          delay(1000);
           break;
           case (ADMIN):
           state = STATE_ADD_USER;
@@ -104,8 +108,9 @@ void loop()
 
     }
   }
-  if (isButtonPushed())
-    toggleDoorLock();
+  // if (isButtonPushed())
+  //   toggleDoorLock();
+
   delay(10);
 }
 
@@ -114,11 +119,11 @@ void toggleDoorLock() {
   if (doorIsOpen) {
     Serial.println("Locking door");
     //myservo.write(5);
-    turnCW(600);
+    turnCW(800);
   } 
   else {
     Serial.println("Opening door");
-    turnCCW(600);
+    turnCCW(800);
     //myservo.write(175);
   }
 
@@ -145,11 +150,11 @@ void turnCCW(int waitTime) {
   //myservo.detach();
 }
 
-
-
 boolean isButtonPushed() {
-  return digitalRead(buttonPin) == LOW;
+ return digitalRead(buttonPin) == HIGH;
 }
+
+
 
 
 
