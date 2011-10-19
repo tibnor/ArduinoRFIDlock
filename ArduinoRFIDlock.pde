@@ -15,10 +15,17 @@
 Servo myservo;
 
 const int SerInToArdu=2; //Defines pin data passes to Arduino over from RFID reader
-const int SerOutFrmArdu=3; //Not used, but
+const int SerOutFrmArdu=4; //Not used, but
 //"fills" a parameter in the set up of
 //mySerialPort
-int buttonPin = 8; // Digital pin for button
+const int buttonPin = 8; // Digital pin for button
+const int SERVO_PIN = 9;
+const int RED_LED_PIN = 6;   
+const int GREEN_LED_PIN = 10;
+const int BLUE_LED_PIN = 11;
+
+boolean doorIsOpen = true;
+
 
 NewSoftSerial mySerialPort(SerInToArdu,SerOutFrmArdu);
 //  Creates serial port for RFID reader to be attached to.
@@ -43,17 +50,20 @@ void setup()
   Serial.println("Bring an RFID tag near the reader...");
   mySerialPort.begin(9600);
   theStorage = IdStorage();
-  myservo.attach(9);
+  myservo.attach(SERVO_PIN);
   myservo.write(90);
   pinMode(buttonPin,INPUT);
   //theStorage.clear();
   theStorage.printIds();
   //IdStorageTest test;
+ 
+
 
 };
 
 void loop()
 {
+  setCorrectLight();
   while (mySerialPort.available() > 0) {
     // read the incoming byte from the serial buffer
     incomingByte = mySerialPort.read();
@@ -92,15 +102,16 @@ void loop()
       else {
         switch (userType) {
           case (USER):
+          changeColor(0,255,0);
           toggleDoorLock();
           mySerialPort.flush();
-          delay(1000);
           break;
           case (ADMIN):
           state = STATE_ADD_USER;
           Serial.println("State: add user");
           break;
           case (UNKNOWN):
+          blinkLight(255, 0, 0, 300, 5);
           Serial.println("Access denied!");
           break;
         }
@@ -115,7 +126,7 @@ void loop()
 }
 
 void toggleDoorLock() {
-  static boolean doorIsOpen = true;
+
   if (doorIsOpen) {
     Serial.println("Locking door");
     //myservo.write(5);
@@ -130,36 +141,76 @@ void toggleDoorLock() {
   doorIsOpen = !doorIsOpen;
 }
 
-void turnCW(int waitTime) {
-  //myservo.attach(9);
-  //myservo.writeMicroseconds(2000);
+void turnCCW(int waitTime) {
   myservo.write(180);
-  delay(waitTime);
-  //myservo.writeMicroseconds(1500);
+  redToGreen(waitTime);
   myservo.write(90);
-  //myservo.detach();
 }
 
-void turnCCW(int waitTime) {
-  //myservo.attach(9);
-  //myservo.writeMicroseconds(1000);
+void turnCW(int waitTime) {
   myservo.write(0);
-  delay(waitTime);
-  //myservo.writeMicroseconds(1500);
+  redToGreen(waitTime);
+  //greenToRed(waitTime);
   myservo.write(90);
-  //myservo.detach();
 }
 
 boolean isButtonPushed() {
  return digitalRead(buttonPin) == HIGH;
 }
 
+void changeColor(int red, int green, int blue){
+  analogWrite(RED_LED_PIN,red);
+  analogWrite(GREEN_LED_PIN,green);
+  analogWrite(BLUE_LED_PIN,blue);
+}
+
+void setCorrectLight(){
+ if (state ==  STATE_DOOR_LOCK){
+   if(doorIsOpen) {
+     changeColor(0,150,0);
+   } else {
+     changeColor(10,0,0);
+   }
+ } else {
+   changeColor(0,0,255);
+ }
+}
+
+void blinkLight(int red, int green, int blue, int period, int cycles) {
+ for (int i = 0; i<cycles; i++) {
+     changeColor(red,green,blue);
+     delay(period/2);
+     changeColor(0,0,0);
+     delay(period/2);
+ }  
+}
 
 
+void redToGreen(int waitTime) {
+  int red = 255;
+  int green = 0;
+  for (int i = 0; i<255; i++) {
+    red --;
+    green ++; 
+    changeColor(red,green,0);
+    delay(waitTime/255);
+ }  
+}
 
-
-
-
-
-
-
+/*
+void greenToRed(int waitTime) {
+  int red = 0;
+  int green = 255;
+  for (int i = 0; i<255; i++) {
+    green --; 
+    changeColor(red,green,0);
+    delay(1);
+ }  
+   for (int i = 0; i<255; i++) {
+    red ++;
+    changeColor(red,green,0);
+    delay(1);
+ }  
+ delay(waitTime-512);
+}
+*/

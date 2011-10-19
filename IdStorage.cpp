@@ -3,18 +3,18 @@
 
 IdStorage::IdStorage() {
   loadEEPROM();
-  idAdmin[0] = '4';
-  idAdmin[1] = '4';
+  idAdmin[0] = '0';
+  idAdmin[1] = 'E';
   idAdmin[2] = '0';
   idAdmin[3] = '0';
-  idAdmin[4] = '8';
-  idAdmin[5] = '5';
-  idAdmin[6] = 'D';
-  idAdmin[7] = '2';
-  idAdmin[8] = 'E';
-  idAdmin[9] = '4';
-  idAdmin[10] = 'F';
-  idAdmin[11] = '7';
+  idAdmin[4] = 'F';
+  idAdmin[5] = '4';
+  idAdmin[6] = '1';
+  idAdmin[7] = '4';
+  idAdmin[8] = '0';
+  idAdmin[9] = 'D';
+  idAdmin[10] = 'E';
+  idAdmin[11] = '3';
 }
 
 boolean IdStorage::storeId(byte id[ID_SIZE]) {
@@ -71,6 +71,12 @@ boolean IdStorage::TagMatch(byte sFirst[ID_SIZE],byte sSecond[ID_SIZE])
 #define USER 1
 #define ADMIN 2
 byte IdStorage::typeOfUser(byte tag[ID_SIZE]) {
+  Serial.print("id on card: ");
+  for (int j = 0; j < ID_SIZE; j = j + 1) {
+    Serial.print(tag[j],BYTE);
+  }
+  Serial.println();
+  
   for (byte i = 0; i<idPos;i++){
     if(TagMatch(ids[i],tag))
       return USER;
