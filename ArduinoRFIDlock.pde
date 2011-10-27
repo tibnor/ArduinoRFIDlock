@@ -63,7 +63,6 @@ void setup()
 
 void loop()
 {
-  //setCorrectLight();
   while (mySerialPort.available() > 0) {
     // read the incoming byte from the serial buffer
     incomingByte = mySerialPort.read();
@@ -102,7 +101,6 @@ void loop()
       else {
         switch (userType) {
           case (USER):
-          changeColor(0,255,0);
           toggleDoorLock();
           mySerialPort.flush();
           break;
@@ -144,6 +142,7 @@ void toggleDoorLock() {
   }
 
   doorIsOpen = !doorIsOpen;
+  setCorrectLight();
 }
 
 void turnCCW(int waitTime) {
