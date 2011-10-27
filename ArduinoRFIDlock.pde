@@ -63,7 +63,7 @@ void setup()
 
 void loop()
 {
-  setCorrectLight();
+  //setCorrectLight();
   while (mySerialPort.available() > 0) {
     // read the incoming byte from the serial buffer
     incomingByte = mySerialPort.read();
@@ -93,7 +93,7 @@ void loop()
         if (userType == UNKNOWN)
           theStorage.storeId(id);
         else if (userType == ADMIN){
-          state = STATE_DOOR_LOCK;
+          setState(STATE_DOOR_LOCK);
           Serial.println("State: door lock");
         }
 
@@ -107,7 +107,7 @@ void loop()
           mySerialPort.flush();
           break;
           case (ADMIN):
-          state = STATE_ADD_USER;
+          setState(STATE_ADD_USER);
           Serial.println("State: add user");
           break;
           case (UNKNOWN):
@@ -123,6 +123,11 @@ void loop()
   //   toggleDoorLock();
 
   delay(10);
+}
+
+void setState(int newState){
+  state = newState;
+  setCorrectLight();
 }
 
 void toggleDoorLock() {
