@@ -24,6 +24,9 @@ const int RED_LED_PIN = 6;
 const int GREEN_LED_PIN = 10;
 const int BLUE_LED_PIN = 11;
 
+const int RED_INTENSITY = 100;
+const int GREEN_INTENSITY = 100;
+
 boolean doorIsOpen = true;
 
 
@@ -56,7 +59,7 @@ void setup()
   //theStorage.clear();
   theStorage.printIds();
   //IdStorageTest test;
- 
+  setCorrectLight();
 
 
 };
@@ -153,8 +156,7 @@ void turnCCW(int waitTime) {
 
 void turnCW(int waitTime) {
   myservo.write(0);
-  redToGreen(waitTime);
-  //greenToRed(waitTime);
+  greenToRed(waitTime);
   myservo.write(90);
 }
 
@@ -171,9 +173,9 @@ void changeColor(int red, int green, int blue){
 void setCorrectLight(){
  if (state ==  STATE_DOOR_LOCK){
    if(doorIsOpen) {
-     changeColor(0,150,0);
+     changeColor(0,GREEN_INTENSITY,0);
    } else {
-     changeColor(10,0,0);
+     changeColor(RED_INTENSITY,0,0);
    }
  } else {
    changeColor(0,0,255);
@@ -191,30 +193,40 @@ void blinkLight(int red, int green, int blue, int period, int cycles) {
 
 
 void redToGreen(int waitTime) {
-  int red = 255;
+  int red = RED_INTENSITY;
   int green = 0;
-  for (int i = 0; i<255; i++) {
-    red --;
-    green ++; 
+  int waitedTime = 0;
+  for (int i = 0; i<RED_INTENSITY; i++) {
+    red --; 
     changeColor(red,green,0);
-    delay(waitTime/255);
+    delay(2);
+    waitedTime = waitedTime + 2;
  }  
-}
-
-/*
-void greenToRed(int waitTime) {
-  int red = 0;
-  int green = 255;
-  for (int i = 0; i<255; i++) {
-    green --; 
+   for (int i = 0; i<255; i++) {
+    green ++;
     changeColor(red,green,0);
     delay(1);
+    waitedTime++;
+ } 
+ delay(waitTime-waitedTime);
+}
+
+
+void greenToRed(int waitTime) {
+  int red = 0;
+  int green = GREEN_INTENSITY;
+  int waitedTime = 0;
+  for (int i = 0; i<GREEN_INTENSITY; i++) {
+    green --; 
+    changeColor(red,green,0);
+    delay(2);
+    waitedTime = waitedTime + 2;
  }  
    for (int i = 0; i<255; i++) {
     red ++;
     changeColor(red,green,0);
     delay(1);
+    waitedTime++;
  }  
- delay(waitTime-512);
+ delay(waitTime-waitedTime);
 }
-*/
