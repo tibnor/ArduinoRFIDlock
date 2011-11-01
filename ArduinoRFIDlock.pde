@@ -121,9 +121,23 @@ void loop()
     }
   }
    if (isButtonPushed())
-     toggleDoorLock();
+     buttonLoop();
 
   delay(10);
+}
+
+void buttonLoop(){
+  int ms = 0;
+  while (ms<1000){
+    if (!isButtonPushed()){
+       toggleDoorLock();
+       return;
+    }
+    ms += 10;
+    delay(10);
+  }
+  blinkLight(255, 255, 0, 500, 10);
+  toggleDoorLock();
 }
 
 void setState(int newState){
@@ -161,7 +175,7 @@ void turnCW(int waitTime) {
 }
 
 boolean isButtonPushed() {
- return digitalRead(buttonPin) == HIGH;
+ return digitalRead(buttonPin) == LOW;
 }
 
 void changeColor(int red, int green, int blue){
