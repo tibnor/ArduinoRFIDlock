@@ -200,6 +200,7 @@ void changeColor(int red, int green, int blue){
 void setCorrectLight(){
  if (state ==  STATE_DOOR_LOCK){
    if(doorIsOpen) {
+	  analogWrite(INTERNAL_LED,0);
      changeColor(0,GREEN_INTENSITY,0);
    } else {
      changeColor(RED_INTENSITY,0,0);
