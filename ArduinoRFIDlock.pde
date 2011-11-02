@@ -147,6 +147,7 @@ void buttonLoop(){
     ms += 10;
     delay(10);
   }
+  analogWrite(INTERNAL_LED,0);
   blinkLight(255, 255, 0, 500, 10);
   toggleDoorLock();
   analogWrite(INTERNAL_LED,0);
