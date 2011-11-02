@@ -132,9 +132,11 @@ void buttonLoop(){
   int intensity = 0;
   while (ms<1000){
 	 analogWrite(INTERNAL_LED,intensity);
-	 intensity += 3;
-	 if (intensity > 255){
-		 intensity = 255;
+	 if (ms > 40) {
+		 intensity += 3;
+		 if (intensity > 255){
+			 intensity = 255;
+		 }
 	 }
 
     if (!isButtonPushed()){
@@ -200,6 +202,7 @@ void setCorrectLight(){
      changeColor(0,GREEN_INTENSITY,0);
    } else {
      changeColor(RED_INTENSITY,0,0);
+	  analogWrite(INTERNAL_LED,100);
    }
  } else {
    changeColor(0,0,255);
