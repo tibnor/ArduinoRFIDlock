@@ -23,6 +23,7 @@ const int SERVO_PIN = 9;
 const int RED_LED_PIN = 6;   
 const int GREEN_LED_PIN = 10;
 const int BLUE_LED_PIN = 11;
+const int INTERNAL_LED = 5;
 
 const int RED_INTENSITY = 100;
 const int GREEN_INTENSITY = 100;
@@ -128,8 +129,16 @@ void loop()
 
 void buttonLoop(){
   int ms = 0;
+  int intensity = 0;
   while (ms<1000){
+	 analogWrite(INTERNAL_LED,intensity);
+	 intensity += 3;
+	 if (intensity > 255){
+		 intensity = 255;
+	 }
+
     if (!isButtonPushed()){
+		 analogWrite(INTERNAL_LED,0);
        toggleDoorLock();
        return;
     }
@@ -138,6 +147,7 @@ void buttonLoop(){
   }
   blinkLight(255, 255, 0, 500, 10);
   toggleDoorLock();
+  analogWrite(INTERNAL_LED,0);
 }
 
 void setState(int newState){
