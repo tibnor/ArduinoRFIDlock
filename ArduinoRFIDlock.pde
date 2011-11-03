@@ -19,6 +19,9 @@ const int SerOutFrmArdu=4; //Not used, but
 //"fills" a parameter in the set up of
 //mySerialPort
 const int buttonPin = 8; // Digital pin for button
+int lastButton = LOW;
+int currentButton = LOW; 
+
 const int SERVO_PIN = 9;
 const int RED_LED_PIN = 6;   
 const int GREEN_LED_PIN = 10;
@@ -121,37 +124,68 @@ void loop()
 
     }
   }
-   if (isButtonPushed())
-     buttonLoop();
-
-  delay(10);
+	currentButton = debounce(lastButton);
+	if (lastButton == LOW && currentButton == HIGH)
+		buttonLoop();
+  delay(5);
+  lastButton = currentButton;
 }
 
 void buttonLoop(){
-  int ms = 0;
-  int intensity = 0;
-  while (ms<1000){
-	 analogWrite(INTERNAL_LED,intensity);
-	 if (ms > 40) {
-		 intensity += 3;
-		 if (intensity > 255){
-			 intensity = 255;
-		 }
-	 }
+	delay(200);
+	if (digitalRead(buttonPin) == HGIH){
+		toggleDoorLock();
+		return;
+	}
+	
+	int ms = 0;
+	int cycle = 0;
+	int stopTime = 5000;
+	int led = 255;
+	int blinkPeriod = 500;
+  
+	analogWrite(INTERNAL_LED,led);
+	changeColor(led,led,0);
 
-    if (!isButtonPushed()){
-		 analogWrite(INTERNAL_LED,0);
-       toggleDoorLock();
-       return;
-    }
-    ms += 10;
-    delay(10);
+	while (ms<stopTime){
+		ms += 5;
+		cycle += 5;
+		currentButton = debounce(lastButton);
+		if (lastButton == LOW && currentButton == HIGH){
+			break;
+		}
+		lastButton = currentButton;
+
+		if (cycle >= blinkPeriod){
+			cycle = 0;
+			if (ms >= stopTime-2000)
+				cycle = cycle/2;
+
+			if(led = 0)
+				led = 255;
+			else
+				led = 0;
+
+			analogWrite(INTERNAL_LED,led);
+			changeColor(led,led,0);
+		}
+
   }
   analogWrite(INTERNAL_LED,0);
-  blinkLight(255, 255, 0, 500, 10);
+  changeColor(0,0,0);
   toggleDoorLock();
-  analogWrite(INTERNAL_LED,0);
 }
+
+boolean debounce(boolean last)
+{
+	boolean current = digitalRead(buttonPin);
+	if (last != current) {
+		delay(5);
+		current = digitalRead(buttonPin);
+	 }
+	return current;
+}
+
 
 void setState(int newState){
   state = newState;
