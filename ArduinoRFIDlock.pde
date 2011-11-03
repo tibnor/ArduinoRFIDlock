@@ -19,8 +19,8 @@ const int SerOutFrmArdu=4; //Not used, but
 //"fills" a parameter in the set up of
 //mySerialPort
 const int buttonPin = 8; // Digital pin for button
-int lastButton = LOW;
-int currentButton = LOW; 
+int lastButton = HIGH;
+int currentButton = HIGH; 
 
 const int SERVO_PIN = 9;
 const int RED_LED_PIN = 6;   
@@ -125,15 +125,17 @@ void loop()
     }
   }
 	currentButton = debounce(lastButton);
-	if (lastButton == LOW && currentButton == HIGH)
+	if (lastButton == HIGH && currentButton == LOW) {
+	  lastButton = currentButton;
 		buttonLoop();
+	}
   delay(5);
   lastButton = currentButton;
 }
 
 void buttonLoop(){
 	delay(200);
-	if (digitalRead(buttonPin) == HGIH){
+	if (digitalRead(buttonPin) == LOW){
 		toggleDoorLock();
 		return;
 	}
@@ -151,7 +153,7 @@ void buttonLoop(){
 		ms += 5;
 		cycle += 5;
 		currentButton = debounce(lastButton);
-		if (lastButton == LOW && currentButton == HIGH){
+		if (lastButton == HIGH && currentButton == LOW){
 			break;
 		}
 		lastButton = currentButton;
