@@ -3,11 +3,11 @@
 #include <EEPROM.h>
 #include <Servo2.h>
 /*#ifndef TEST
-#define TEST
-#include <ArduinoTestSuite.h>
-#include "TestIdStorage.h"
-#endif
-*/
+ #define TEST
+ #include <ArduinoTestSuite.h>
+ #include "TestIdStorage.h"
+ #endif
+ */
 #include "IdStorage.h"
 
 
@@ -124,53 +124,50 @@ void loop()
 
     }
   }
-	currentButton = debounce(lastButton);
-	if (lastButton == HIGH && currentButton == LOW) {
-	  lastButton = currentButton;
-		buttonLoop();
-	}
+  currentButton = debounce(lastButton);
+  if (lastButton == HIGH && currentButton == LOW) {
+    lastButton = currentButton;
+    buttonLoop();
+  }
   delay(5);
   lastButton = currentButton;
 }
 
 void buttonLoop(){
-	delay(200);
-	if (digitalRead(buttonPin) == LOW){
-		toggleDoorLock();
-		return;
-	}
-	
-	int ms = 0;
-	int cycle = 0;
-	int stopTime = 5000;
-	int led = 255;
-	int blinkPeriod = 500;
-  
-	analogWrite(INTERNAL_LED,led);
-	changeColor(led,led,0);
+  while (isButtonPushed())
+    delay(20);
 
-	while (ms<stopTime){
-		ms += 5;
-		cycle += 5;
-		currentButton = debounce(lastButton);
-		if (lastButton == HIGH && currentButton == LOW){
-			break;
-		}
-		lastButton = currentButton;
+  int ms = 0;
+  int cycle = 0;
+  int stopTime = 5000;
+  int led = 255;
+  int blinkPeriod = 500;
 
-		if (cycle >= blinkPeriod){
-			cycle = 0;
-			if (ms >= stopTime-2000)
-				cycle = cycle/2;
+  analogWrite(INTERNAL_LED,led);
+  changeColor(led,led,0);
 
-			if(led = 0)
-				led = 255;
-			else
-				led = 0;
+  while (ms<stopTime){
+    ms += 5;
+    cycle += 5;
+    delay(5);
+    //currentButton = debounce(lastButton);
+    if (isButtonPushed())//(lastButton == HIGH && currentButton == LOW){
+      break;
 
-			analogWrite(INTERNAL_LED,led);
-			changeColor(led,led,0);
-		}
+
+    if (cycle >= blinkPeriod){
+      cycle = 0;
+      if (ms >= stopTime-3000)
+        blinkPeriod = 250;
+
+      if(led == 0)
+        led = 255;
+      else
+        led = 0;
+
+      analogWrite(INTERNAL_LED,led);
+      changeColor(led,led,0);
+    }
 
   }
   analogWrite(INTERNAL_LED,0);
@@ -180,12 +177,12 @@ void buttonLoop(){
 
 boolean debounce(boolean last)
 {
-	boolean current = digitalRead(buttonPin);
-	if (last != current) {
-		delay(5);
-		current = digitalRead(buttonPin);
-	 }
-	return current;
+  boolean current = digitalRead(buttonPin);
+  if (last != current) {
+    delay(5);
+    current = digitalRead(buttonPin);
+  }
+  return current;
 }
 
 
@@ -224,7 +221,7 @@ void turnCW(int waitTime) {
 }
 
 boolean isButtonPushed() {
- return digitalRead(buttonPin) == LOW;
+  return digitalRead(buttonPin) == LOW;
 }
 
 void changeColor(int red, int green, int blue){
@@ -234,26 +231,28 @@ void changeColor(int red, int green, int blue){
 }
 
 void setCorrectLight(){
- if (state ==  STATE_DOOR_LOCK){
-   if(doorIsOpen) {
-	  analogWrite(INTERNAL_LED,0);
-     changeColor(0,GREEN_INTENSITY,0);
-   } else {
-     changeColor(RED_INTENSITY,0,0);
-	  analogWrite(INTERNAL_LED,100);
-   }
- } else {
-   changeColor(0,0,255);
- }
+  if (state ==  STATE_DOOR_LOCK){
+    if(doorIsOpen) {
+      analogWrite(INTERNAL_LED,0);
+      changeColor(0,GREEN_INTENSITY,0);
+    } 
+    else {
+      changeColor(RED_INTENSITY,0,0);
+      analogWrite(INTERNAL_LED,100);
+    }
+  } 
+  else {
+    changeColor(0,0,255);
+  }
 }
 
 void blinkLight(int red, int green, int blue, int period, int cycles) {
- for (int i = 0; i<cycles; i++) {
-     changeColor(red,green,blue);
-     delay(period/2);
-     changeColor(0,0,0);
-     delay(period/2);
- }  
+  for (int i = 0; i<cycles; i++) {
+    changeColor(red,green,blue);
+    delay(period/2);
+    changeColor(0,0,0);
+    delay(period/2);
+  }  
 }
 
 
@@ -266,14 +265,14 @@ void redToGreen(int waitTime) {
     changeColor(red,green,0);
     delay(2);
     waitedTime = waitedTime + 2;
- }  
-   for (int i = 0; i<255; i++) {
+  }  
+  for (int i = 0; i<255; i++) {
     green ++;
     changeColor(red,green,0);
     delay(1);
     waitedTime++;
- } 
- delay(waitTime-waitedTime);
+  } 
+  delay(waitTime-waitedTime);
 }
 
 
@@ -286,12 +285,13 @@ void greenToRed(int waitTime) {
     changeColor(red,green,0);
     delay(2);
     waitedTime = waitedTime + 2;
- }  
-   for (int i = 0; i<255; i++) {
+  }  
+  for (int i = 0; i<255; i++) {
     red ++;
     changeColor(red,green,0);
     delay(1);
     waitedTime++;
- }  
- delay(waitTime-waitedTime);
+  }  
+  delay(waitTime-waitedTime);
 }
+
