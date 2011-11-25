@@ -20,6 +20,8 @@ class IdStorage {
     void loadEEPROM();
   private:
     byte idPos;
+    void setNumberOfTags(int n);
+    void dumpEEPROM();
     byte ids[20][ID_SIZE];
     byte idAdmin[ID_SIZE];
 

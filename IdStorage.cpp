@@ -3,6 +3,8 @@
 
 IdStorage::IdStorage() {
   loadEEPROM();
+  dumpEEPROM();
+  setNumberOfTags(19);
   idAdmin[0] = '0';
   idAdmin[1] = 'E';
   idAdmin[2] = '0';
@@ -76,7 +78,7 @@ byte IdStorage::typeOfUser(byte tag[ID_SIZE]) {
     Serial.print(tag[j],BYTE);
   }
   Serial.println();
-  
+
   for (byte i = 0; i<idPos;i++){
     if(TagMatch(ids[i],tag))
       return USER;
@@ -88,10 +90,23 @@ byte IdStorage::typeOfUser(byte tag[ID_SIZE]) {
     return UNKNOWN;
 };
 
+void IdStorage::dumpEEPROM() {
+  Serial.println("Dumping EEPROM\n");
+  for (int i = 0; i < 1024; i++) {  
+    Serial.print((byte) EEPROM.read(i),BYTE);
+  }
+    Serial.println("Done");
+}
+
+void IdStorage::setNumberOfTags(int n){
+    EEPROM.write(0x00,n);
+    loadEEPROM();
+}
+
 void IdStorage::loadEEPROM() {
   //Read number of IDs in first byte
   idPos = EEPROM.read(0);
-  
+
   int address = 0x01;
   if(idPos > 0) {
     for (int i = 0; i < idPos; i++) {  
@@ -124,6 +139,7 @@ void IdStorage::storeEEPROM() {
 void IdStorage::clear() {
   idPos = 0;
 }
+
 
 
 
