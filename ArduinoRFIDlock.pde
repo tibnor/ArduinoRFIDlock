@@ -27,6 +27,7 @@ const int RED_LED_PIN = 6;
 const int GREEN_LED_PIN = 10;
 const int BLUE_LED_PIN = 11;
 const int INTERNAL_LED = 5;
+const int DOOR_BUTTON_PIN = 7;
 
 const int RED_INTENSITY = 100;
 const int GREEN_INTENSITY = 100;
@@ -134,31 +135,25 @@ void loop()
 }
 
 void buttonLoop(){
-  while (isButtonPushed())
-    delay(20);
-
   int ms = 0;
   int cycle = 0;
-  int stopTime = 5000;
   int led = 255;
   int blinkPeriod = 500;
 
   analogWrite(INTERNAL_LED,led);
   changeColor(led,led,0);
 
-  while (ms<stopTime){
+  while (true){
     ms += 5;
     cycle += 5;
     delay(5);
     //currentButton = debounce(lastButton);
-    if (isButtonPushed())//(lastButton == HIGH && currentButton == LOW){
+    if (isDoorClosed())//(lastButton == HIGH && currentButton == LOW){
       break;
-
+    
 
     if (cycle >= blinkPeriod){
       cycle = 0;
-      if (ms >= stopTime-3000)
-        blinkPeriod = 250;
 
       if(led == 0)
         led = 255;
@@ -172,6 +167,7 @@ void buttonLoop(){
   }
   analogWrite(INTERNAL_LED,0);
   changeColor(0,0,0);
+  delay(500);
   toggleDoorLock();
 }
 
@@ -222,6 +218,10 @@ void turnCW(int waitTime) {
 
 boolean isButtonPushed() {
   return digitalRead(buttonPin) == LOW;
+}
+
+boolean isDoorClosed() {
+  return digitalRead(DOOR_BUTTON_PIN) == LOW;
 }
 
 void changeColor(int red, int green, int blue){
