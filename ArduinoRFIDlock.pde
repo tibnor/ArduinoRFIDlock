@@ -71,10 +71,7 @@ void setup()
 
 void loop()
 {
-  boolean test = false;
   while (mySerialPort.available() > 0) {
-    analogWrite(INTERNAL_LED,100*test);
-    test = !test;
     // read the incoming byte from the serial buffer
     incomingByte = mySerialPort.read();
 
