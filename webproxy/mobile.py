@@ -35,7 +35,7 @@ class RequestKey(webapp.RequestHandler):
         mobile = Mobile()
         key = mobile.updateKey()
         id = mobile.key().id()
-        self.response.out.write("{\"status\":200,\"id\":"+str(id)+",\"word\":"+str(key)+"}")
+        self.response.out.write("{\"status\":200,\"id\":"+str(id)+",\"key\":"+str(key)+"}")
     
 class RequestWord(webapp.RequestHandler):
     def get(self):
