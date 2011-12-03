@@ -6,24 +6,6 @@
 #include <sha1.h>
 #include <EEPROM.h>
 
-void printHash(uint8_t* hash) {
-  int i;
-  char c;
-  for (i=0; i<20; i++) {
-    Serial.print("0123456789ABCDEF"[hash[i]>>4]);
-    Serial.print("0123456789ABCDEF"[hash[i]&0xf]);
-    //Serial.print(byte(hash[i]),BYTE);
-  }
-  Serial.println();
-  for (i=0; i<20; i++) {
-    c = "0123456789ABCDEF"[hash[i]>>4];
-    Serial.print(c);
-    c = "0123456789ABCDEF"[hash[i]&0xf];
-    Serial.print(c);
-  }
-  Serial.println();
-}
-
 boolean equalHash(uint8_t* hash,String h) {
   boolean equal = true;
   char c;
@@ -39,7 +21,7 @@ boolean equalHash(uint8_t* hash,String h) {
 }
 
 byte mac[] = { 
-  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+  0x00, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
 const char* ip_to_str(const uint8_t*);
 static DhcpState prevState = DhcpStateNone;
@@ -47,18 +29,21 @@ static unsigned long prevTime = 0;
 
 Server server(80);
 String readString = String(30);
+boolean doorIsOpen = true;
 
 void setup()
 {
   Serial.begin(9600);
-EEPROMWriteInt(0xFE, 0);
+  EEPROMWriteInt(0xFE, 0);
   EthernetDHCP.begin(mac, 1);
 }
 
 void loop()
 {
   dhcpLoop();
-  serverLoop();
+  if(serverLoop(doorIsOpen)){
+    doorIsOpen = !doorIsOpen; 
+  }
 
 
 }
@@ -84,8 +69,6 @@ void dhcpLoop()
       {
         Serial.println("Obtained lease!");
 
-        // Since we're here, it means that we now have a DHCP lease, so we
-        // print out some information.
         const byte* ipAddr = EthernetDHCP.ipAddress();
         const byte* gatewayAddr = EthernetDHCP.gatewayIpAddress();
         const byte* dnsAddr = EthernetDHCP.dnsIpAddress();
@@ -117,8 +100,9 @@ void dhcpLoop()
   prevState = state;
 }
 
-void serverLoop()
+boolean serverLoop(boolean doorIsOpen)
 {
+  boolean toogleDoor = false;
   // listen for incoming clients
   Client client = server.available();
   if (client) {
@@ -143,52 +127,48 @@ void serverLoop()
 
           if (requestString.endsWith(" ") && parsingRequest == true) {
             parsingRequest = false;
-            //client.println("HTTP/1.1 200 OK");
-            //client.println("Content-Type: text/plain");
-            //client.println();
-            //client.print("You requested: ");
-            //client.print(requestString);
-            //client.println("<br />");
             if(requestString.startsWith("/toggle")){
               String password = "293817605955944458611932855688381892606222593904";
+
+              // Compare id  recived with old id and check if it has been used
               unsigned int oldId = EEPROMReadInt(0xFE);
               String idS=requestString.substring(11,21);
               char buf[11];
               idS.toCharArray(buf,11);
               unsigned int id = atoi(&(buf[0]));
-              Serial.println("id: ");
-              Serial.println(id);
-              Serial.println(oldId);
               if(id<oldId){
                 Serial.println("old id");
                 client.print("{\"id\":\"");
                 client.print(oldId);
                 client.print("\",\"status\":400}");
-              } else {
-              String hash=requestString.substring(27).trim();
-              Sha1.init();
-              Sha1.print(password+idS);
-              if(equalHash(Sha1.result(),hash)){
-                Serial.println("Hash equal");
-                EEPROMWriteInt(0xFE, id+1);
-                client.print("{\"id\":\"");
-                client.print(id+1);
-                client.print("\",\"open\":1,\"status\":200}");
-              }
+              } 
               else {
-                Serial.println("Hash not equal");
-                //Serial.println(password+idS);
-                //printHash(Sha1.result());
-                client.print("{\"status\":403}");
+                
+                // Check if hash is correct
+                String hash=requestString.substring(27).trim();
+                Sha1.init();
+                Sha1.print(password+idS);
+                if(equalHash(Sha1.result(),hash)){
+                  Serial.println("Hash equal");
+                  EEPROMWriteInt(0xFE, id+1);
+                  // Return new id
+                  client.print("{\"id\":\"");
+                  client.print(id+1);
+                  client.print("\",\"open\":");
+                  client.print(!doorIsOpen);
+                  client.print(",\"status\":200}");
+                }
+                else {
+                  //Serial.println("Hash not equal");
+                  client.print("{\"status\":403}");
+                }
               }
-              }
-               client.println();
+              client.println();
             }
-            Serial.print("REQ: ");
-            Serial.println(requestString);
- }       
- }
-        //Serial.print(c);
+            // Serial.print("REQ: ");
+            // Serial.println(requestString);
+          }       
+        }
 
         // if you've gotten to the end of the line (received a newline
         // character) and the line is blank, the http request has ended,
@@ -238,6 +218,7 @@ unsigned int EEPROMReadInt(int p_address)
   byte highByte = EEPROM.read(p_address + 1);
   return ((lowByte << 0) & 0xFF) + ((highByte << 8) & 0xFF00);
 }
+
 
 
 
