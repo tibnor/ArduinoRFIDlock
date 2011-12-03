@@ -8,16 +8,31 @@
 
 void printHash(uint8_t* hash) {
   int i;
+  char c;
   for (i=0; i<20; i++) {
-    Serial.print(byte(hash[i]),BYTE);
+    Serial.print("0123456789ABCDEF"[hash[i]>>4]);
+    Serial.print("0123456789ABCDEF"[hash[i]&0xf]);
+    //Serial.print(byte(hash[i]),BYTE);
+  }
+  Serial.println();
+  for (i=0; i<20; i++) {
+    c = "0123456789ABCDEF"[hash[i]>>4];
+    Serial.print(c);
+    c = "0123456789ABCDEF"[hash[i]&0xf];
+    Serial.print(c);
   }
   Serial.println();
 }
 
 boolean equalHash(uint8_t* hash,String h) {
   boolean equal = true;
+  char c;
   for (int i=0; i<20; i++) {
-    if (hash[i] != byte(h[i]))
+    c = "0123456789abcdef"[hash[i]>>4];
+    if (c != h[i*2])
+      equal = false;
+    c = "0123456789abcdef"[hash[i]&0xf];
+    if (c != h[i*2+1])
       equal = false;
   }
   return equal;
@@ -148,7 +163,7 @@ void serverLoop()
                 Serial.println("old id");
                 client.print("{\"id\":\"");
                 client.print(oldId);
-                client.print("\",\"error\":403}");
+                client.print("\",\"status\":400}");
               } else {
               String hash=requestString.substring(27).trim();
               Sha1.init();
@@ -158,13 +173,13 @@ void serverLoop()
                 EEPROMWriteInt(0xFE, id+1);
                 client.print("{\"id\":\"");
                 client.print(id+1);
-                client.print("\",\"open\":1}");
+                client.print("\",\"open\":1,\"status\":200}");
               }
               else {
                 Serial.println("Hash not equal");
-                Serial.println(password+idS);
-                printHash(Sha1.result());
-                client.print("{\"error\":403}");
+                //Serial.println(password+idS);
+                //printHash(Sha1.result());
+                client.print("{\"status\":403}");
               }
               }
                client.println();

@@ -7,10 +7,12 @@ import logging
 import random
 import sys
 import urllib2
+from google.appengine.api import urlfetch_errors
 
 class Doorlock(db.Model):
     #IP = "http://129.241.142.196/"
-    IP = "http://192.168.1.114/"
+    IP = "http://192.168.1.112/"
+    #IP = "http://vg.no/"
     open = db.BooleanProperty(default=True)
     word = db.IntegerProperty(default=0)
     
@@ -22,19 +24,38 @@ class Doorlock(db.Model):
         
         #self.word = 0# += word  
         self.put()  
-        return m.digest()
+        return m.hexdigest()
        
     def ToggleDoor(self):
         key = self.updateToken()
         word = "%010d" % self.word
-        response = urllib2.urlopen(self.IP+"toggle?id="+word+"&hash="+key)
-        result = simplejson.load(response)
-        logging.info(response.fp.fp.buf)
-        #result = simplejson.loads(response.fp.fp.buf)
-        #result = simplejson.loads('{"id": 00000000001,"open":1}')
-        self.word = int(result['id'])
-        self.open = bool(result['open'])
+        try:
+            response = urllib2.urlopen(self.IP+"toggle?id="+word+"&hash="+key)
+        except (urlfetch_errors.DownloadError, urllib2.HTTPError):
+            logging.error("Did not find door lock, wrong IP?")
+            return 500
+        
+        #logging.info(response.fp.fp.buf)
+        try:
+            result = simplejson.load(response)
+        except ValueError:
+            logging.error("Json is wrong, wrong IP?")
+            return 500
+        try:
+            status = int(result['status'])
+        except KeyError:
+            logging.error("Json is wrong, wrong IP?")
+            return 500
+            
+        if status == 200:
+            self.word = int(result['id'])
+            self.open = bool(result['open'])
+        elif status == 403:
+            self.word = int(result['id'])
+        elif status == 400:
+            status = 500;
         self.put()
+        return status
         
 def GetDoorlock():
         doorlock = Doorlock.all();
@@ -129,8 +150,8 @@ class ToggleDoor(webapp.RequestHandler):
             hashServer = m.hexdigest()          
             #self.response.out.write("Server hashServer:"+str(hashServer))
             if (hashInput == hashServer):
-                self.response.out.write("\"status\":200,\"word\":" + str(mobile.updateWord()))
-                GetDoorlock().OpenDoor()
+                status = GetDoorlock().OpenDoor()
+                self.response.out.write("\"status\":"+str(status)+",\"word\":" + str(mobile.updateWord()))
             else:
                 self.response.out.write("\"status\":401")
                 
