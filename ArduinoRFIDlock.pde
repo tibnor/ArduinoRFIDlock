@@ -143,7 +143,12 @@ void buttonLoop(){
   analogWrite(INTERNAL_LED,led);
   changeColor(led,led,0);
 
-  while( doorIsOpen && isDoorClosed() ){
+  // Waiting for realese of button
+  while(isButtonPushed())
+    delay(20);
+
+  // Waiting for button to be pushed or door to open
+  while( doorIsOpen && (isDoorClosed() || isButtonPushed()) ){
     delay(20);
   }
 
@@ -155,7 +160,7 @@ void buttonLoop(){
     //currentButton = debounce(lastButton);
     if (isDoorClosed())//(lastButton == HIGH && currentButton == LOW){
       break;
-    
+
 
     if (cycle >= blinkPeriod){
       cycle = 0;
@@ -299,4 +304,7 @@ void greenToRed(int waitTime) {
   }  
   delay(waitTime-waitedTime);
 }
+
+
+
 
