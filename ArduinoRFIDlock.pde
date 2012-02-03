@@ -143,6 +143,11 @@ void buttonLoop(){
   analogWrite(INTERNAL_LED,led);
   changeColor(led,led,0);
 
+  while( doorIsOpen && isDoorClosed() ){
+    delay(20);
+  }
+
+
   while (true){
     ms += 5;
     cycle += 5;
