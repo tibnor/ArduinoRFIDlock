@@ -10,7 +10,7 @@ import urllib2
 from google.appengine.api import urlfetch_errors
 
 class Doorlock(db.Model):
-    IP = "http://tibnor.dyndns.info:80/"
+    IP = "http://129.241.143.246:80/"
     open = db.BooleanProperty(default=True)
     word = db.IntegerProperty(default=0)
     

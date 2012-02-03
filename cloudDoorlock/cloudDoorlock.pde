@@ -5,6 +5,7 @@
 #include <EthernetDHCP.h>
 #include <sha1.h>
 #include <EEPROM.h>
+#include "password.h"
 
 boolean equalHash(uint8_t* hash,String h) {
   boolean equal = true;
@@ -30,12 +31,16 @@ static unsigned long prevTime = 0;
 Server server(80);
 String readString = String(30);
 boolean doorIsOpen = true;
+unsigned int token;
 
 void setup()
 {
   Serial.begin(9600);
   EEPROMWriteInt(0xFE, 0);
   EthernetDHCP.begin(mac, 1);
+  server.begin();
+  EEPROMWriteInt(0xFE,0);
+  token =EEPROMReadInt(0xFE);
 }
 
 void loop()
@@ -116,7 +121,7 @@ boolean serverLoop(boolean doorIsOpen)
         if (readString.length() < 100) {
           //store characters to string
           readString += c;
-
+          //Serial.print(c);
           if (parsingRequest == true) {
             requestString += c;
           }
@@ -127,46 +132,46 @@ boolean serverLoop(boolean doorIsOpen)
 
           if (requestString.endsWith(" ") && parsingRequest == true) {
             parsingRequest = false;
+            //delay(500);
+            client.println("HTTP/1.1 200 OK");
+            client.println("Content-Type: text/html");
+            client.println();
             if(requestString.startsWith("/toggle")){
-              String password = "293817605955944458611932855688381892606222593904";
+              
 
               // Compare id  recived with old id and check if it has been used
               unsigned int oldId = EEPROMReadInt(0xFE);
-              String idS=requestString.substring(11,21);
-              char buf[11];
-              idS.toCharArray(buf,11);
-              unsigned int id = atoi(&(buf[0]));
-              if(id<oldId){
-                Serial.println("old id");
-                client.print("{\"id\":\"");
-                client.print(oldId);
-                client.print("\",\"status\":400}");
-              } 
-              else {
-                
-                // Check if hash is correct
-                String hash=requestString.substring(27).trim();
-                Sha1.init();
-                Sha1.print(password+idS);
-                if(equalHash(Sha1.result(),hash)){
-                  Serial.println("Hash equal");
-                  EEPROMWriteInt(0xFE, id+1);
-                  // Return new id
-                  client.print("{\"id\":\"");
-                  client.print(id+1);
-                  client.print("\",\"open\":");
-                  client.print(!doorIsOpen);
-                  client.print(",\"status\":200}");
-                }
-                else {
-                  //Serial.println("Hash not equal");
-                  client.print("{\"status\":403}");
-                }
+              String idS=String(token);
+
+              // Check if hash is correct
+              String hash=requestString.substring(17).trim();
+              Sha1.init();
+              Sha1.print(password+idS);
+              Serial.println(password+idS);
+              Serial.println(hash);
+              if(equalHash(Sha1.result(),hash)){
+                Serial.println("Hash equal");
+                client.print("{\"open\":");
+                client.print(!doorIsOpen);
+                client.print(",\"status\":200}");
               }
+              else {
+                //Serial.println("Hash not equal");
+                client.print("{\"status\":403}");
+              }
+
               client.println();
+            } 
+            else if (requestString.startsWith("/id")){
+              token += 1 ;
+              EEPROMWriteInt(0xFE,token);
+                client.print("{\"id\":");
+              client.print(token);
+              client.print("}");
+              Serial.println(token);
             }
             // Serial.print("REQ: ");
-            // Serial.println(requestString);
+
           }       
         }
 
@@ -191,6 +196,7 @@ boolean serverLoop(boolean doorIsOpen)
     readString="";
     // close the connection:
     client.stop();
+
   }
 }
 
@@ -202,7 +208,7 @@ const char* ip_to_str(const uint8_t* ipAddr)
   return buf;
 }
 
-void EEPROMWriteInt(int p_address, int p_value)
+void EEPROMWriteInt(int p_address,unsigned int p_value)
 {
   byte lowByte = ((p_value >> 0) & 0xFF);
   byte highByte = ((p_value >> 8) & 0xFF);
@@ -218,10 +224,3 @@ unsigned int EEPROMReadInt(int p_address)
   byte highByte = EEPROM.read(p_address + 1);
   return ((lowByte << 0) & 0xFF) + ((highByte << 8) & 0xFF00);
 }
-
-
-
-
-
-
-
