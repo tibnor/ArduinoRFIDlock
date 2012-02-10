@@ -5,16 +5,17 @@
 #define UNKNOWN 0
 #define USER 1
 #define ADMIN 2
-#define ID_SIZE 12
+#define ID_SIZE 3
 
 class IdStorage {
   public:
     IdStorage();
     boolean storeId(byte id[ID_SIZE]);
-    boolean matches(byte id[ID_SIZE]);
-    boolean TagMatch(byte sFirst[ID_SIZE],byte sSecond[ID_SIZE]);
+    boolean matches(unsigned int id[ID_SIZE]);
+    boolean TagMatch(unsigned int sFirst[ID_SIZE],unsigned int sSecond[ID_SIZE]);
     void printIds();
-    byte typeOfUser(byte tag[ID_SIZE]);
+    byte typeOfUser(byte tag[12]);
+    byte typeOfUser(unsigned int tag[ID_SIZE]);
     void clear();
     void storeEEPROM();
     void loadEEPROM();
@@ -22,8 +23,10 @@ class IdStorage {
     byte idPos;
     void setNumberOfTags(int n);
     void dumpEEPROM();
-    byte ids[20][ID_SIZE];
-    byte idAdmin[ID_SIZE];
+    unsigned int ids[80][ID_SIZE];
+    unsigned int idAdmin[ID_SIZE];
+    unsigned int SerialReadToInt(byte c1, byte c2, byte c3, byte c4);
+    int SerialReadToInt(byte c);
 
 };
 

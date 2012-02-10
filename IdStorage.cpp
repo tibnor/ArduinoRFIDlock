@@ -4,31 +4,28 @@
 IdStorage::IdStorage() {
   loadEEPROM();
   dumpEEPROM();
-  setNumberOfTags(19);
-  idAdmin[0] = '0';
-  idAdmin[1] = 'E';
-  idAdmin[2] = '0';
-  idAdmin[3] = '0';
-  idAdmin[4] = 'F';
-  idAdmin[5] = '4';
-  idAdmin[6] = '1';
-  idAdmin[7] = '4';
-  idAdmin[8] = '0';
-  idAdmin[9] = 'D';
-  idAdmin[10] = 'E';
-  idAdmin[11] = '3';
+  //setNumberOfTags(0);
+  idAdmin[0] = ((0*16+14)*16+0)*16+0;
+  idAdmin[1] = ((15*16+4)*16+1)*16+4;
+  idAdmin[2] = ((0*16+13)*16+14)*16+3;
 }
 
-boolean IdStorage::storeId(byte id[ID_SIZE]) {
+boolean IdStorage::storeId(byte id[12]) {
   //Check if storage is full
-  if (idPos >= 19) return false;
-
-  if(typeOfUser(id)==UNKNOWN){
-
+  if (idPos >= 80) return false;
+  
+  
+  unsigned int idI[ID_SIZE];
+  for (int i = 0; i < ID_SIZE; i = i + 1){
+      idI[i] = SerialReadToInt(id[i*4],id[i*4+1],id[i*4+2],id[i*4+3]);
+  }
+  
+  if(typeOfUser(idI)==UNKNOWN){
+  for (int i = 0; i < ID_SIZE; i = i + 1){
+      ids[idPos][i] = idI[i];
+  }
     //All Ok, store id
-    for (int i = 0; i < ID_SIZE; i = i + 1){
-      ids[idPos][i] = id[i];
-    }
+
     idPos = idPos + 1; 
     storeEEPROM();
     return true;
@@ -40,7 +37,7 @@ boolean IdStorage::storeId(byte id[ID_SIZE]) {
 void IdStorage::printIds() {
   Serial.print("Admin: ");
   for (int j = 0; j < ID_SIZE; j = j + 1) {
-    Serial.print(idAdmin[j],BYTE);
+    Serial.print(idAdmin[j]);
   }
   Serial.println();
 
@@ -50,18 +47,24 @@ void IdStorage::printIds() {
     Serial.print(i);
     Serial.print(": ");
     for (int j = 0; j < ID_SIZE; j = j + 1) {
-      Serial.print(ids[i][j],BYTE);
+      Serial.print(ids[i][j]);
     }
+    Serial.print(" ");
+    Serial.print(SerialReadToInt(ids[i][0],ids[i][1],ids[i][2],ids[i][3]));
+    Serial.print(" ");
+    Serial.print(SerialReadToInt(ids[i][4],ids[i][5],ids[i][6],ids[i][7]));
+    Serial.print(" ");
+    Serial.print(SerialReadToInt(ids[i][8],ids[i][9],ids[i][10],ids[i][11]));
     Serial.println(", ");
   }
   Serial.println("Done");
 }
 
-boolean IdStorage::TagMatch(byte sFirst[ID_SIZE],byte sSecond[ID_SIZE])
+boolean IdStorage::TagMatch(unsigned int sFirst[ID_SIZE],unsigned int sSecond[ID_SIZE])
 { 
-  for (byte bTmp=1; bTmp < 11; bTmp++)
+  for (int i=0; i<ID_SIZE; i++)
   {
-    if (sFirst[bTmp]!=sSecond[bTmp])
+    if (sFirst[i]!=sSecond[i])
     {
       return false;
     };
@@ -72,10 +75,10 @@ boolean IdStorage::TagMatch(byte sFirst[ID_SIZE],byte sSecond[ID_SIZE])
 #define UNKNOWN 0
 #define USER 1
 #define ADMIN 2
-byte IdStorage::typeOfUser(byte tag[ID_SIZE]) {
+byte IdStorage::typeOfUser(unsigned int tag[ID_SIZE]) {
   Serial.print("id on card: ");
   for (int j = 0; j < ID_SIZE; j = j + 1) {
-    Serial.print(tag[j],BYTE);
+    Serial.print(tag[j]);
   }
   Serial.println();
 
@@ -88,6 +91,14 @@ byte IdStorage::typeOfUser(byte tag[ID_SIZE]) {
     return ADMIN; 
   else
     return UNKNOWN;
+};
+
+byte IdStorage::typeOfUser(byte id[12]) {
+  unsigned int idI[ID_SIZE];
+  for (int i = 0; i < ID_SIZE; i = i + 1){
+      idI[i] = SerialReadToInt(id[i*4],id[i*4+1],id[i*4+2],id[i*4+3]);
+  }
+  return typeOfUser(idI);
 };
 
 void IdStorage::dumpEEPROM() {
@@ -111,7 +122,7 @@ void IdStorage::loadEEPROM() {
   if(idPos > 0) {
     for (int i = 0; i < idPos; i++) {  
       for (int j = 0; j < ID_SIZE; j = j + 1) {
-        ids[i][j] = (byte) EEPROM.read(address);
+        ids[i][j] = (unsigned int) EEPROM.read(address);
         address ++;
       }
     }
@@ -139,6 +150,31 @@ void IdStorage::storeEEPROM() {
 void IdStorage::clear() {
   idPos = 0;
 }
+
+int IdStorage::SerialReadToInt(byte c)
+{
+    if (c >= '0' && c <= '9') {
+	  return c - '0';
+    } else if (c >= 'A' && c <= 'F') {
+	  return c - 'A' + 10;
+    } else {
+        Serial.println('error in convertion of hex to int');
+	  return 0;   // getting here is bad: it means the character was invalid
+    }
+}
+
+unsigned int IdStorage::SerialReadToInt(byte c1, byte c2, byte c3, byte c4)
+{
+    unsigned int n = SerialReadToInt(c1);
+    n *= 16;
+    n += SerialReadToInt(c2);
+    n *= 16;
+    n += SerialReadToInt(c3);
+    n *= 16;
+    n += SerialReadToInt(c4);
+    return n;
+}
+
 
 
 
