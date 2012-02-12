@@ -5,19 +5,22 @@ IdStorage::IdStorage() {
   loadEEPROM();
   dumpEEPROM();
   //setNumberOfTags(0);
-  idAdmin[0] = ((0*16+14)*16+0)*16+0;
-  idAdmin[1] = ((15*16+4)*16+1)*16+4;
-  idAdmin[2] = ((0*16+13)*16+14)*16+3;
+  idAdmin[0] = 0*16+14;
+  idAdmin[1] = 0*16+0;
+  idAdmin[2] = 15*16+4;
+  idAdmin[3] = 1*16+4;
+  idAdmin[4] = 0*16+13;
+  idAdmin[5] = 14*16+3;
 }
 
 boolean IdStorage::storeId(byte id[12]) {
   //Check if storage is full
-  if (idPos >= 80) return false;
+  if (idPos >= 40) return false;
   
   
   unsigned int idI[ID_SIZE];
   for (int i = 0; i < ID_SIZE; i = i + 1){
-      idI[i] = SerialReadToInt(id[i*4],id[i*4+1],id[i*4+2],id[i*4+3]);
+      idI[i] = SerialReadToInt(id[i*2],id[i*2+1]);
   }
   
   if(typeOfUser(idI)==UNKNOWN){
@@ -37,6 +40,7 @@ boolean IdStorage::storeId(byte id[12]) {
 void IdStorage::printIds() {
   Serial.print("Admin: ");
   for (int j = 0; j < ID_SIZE; j = j + 1) {
+    Serial.print(" ");
     Serial.print(idAdmin[j]);
   }
   Serial.println();
@@ -47,14 +51,9 @@ void IdStorage::printIds() {
     Serial.print(i);
     Serial.print(": ");
     for (int j = 0; j < ID_SIZE; j = j + 1) {
+      Serial.print(" ");
       Serial.print(ids[i][j]);
     }
-    Serial.print(" ");
-    Serial.print(SerialReadToInt(ids[i][0],ids[i][1],ids[i][2],ids[i][3]));
-    Serial.print(" ");
-    Serial.print(SerialReadToInt(ids[i][4],ids[i][5],ids[i][6],ids[i][7]));
-    Serial.print(" ");
-    Serial.print(SerialReadToInt(ids[i][8],ids[i][9],ids[i][10],ids[i][11]));
     Serial.println(", ");
   }
   Serial.println("Done");
@@ -96,7 +95,7 @@ byte IdStorage::typeOfUser(unsigned int tag[ID_SIZE]) {
 byte IdStorage::typeOfUser(byte id[12]) {
   unsigned int idI[ID_SIZE];
   for (int i = 0; i < ID_SIZE; i = i + 1){
-      idI[i] = SerialReadToInt(id[i*4],id[i*4+1],id[i*4+2],id[i*4+3]);
+      idI[i] = SerialReadToInt(id[i*2],id[i*2+1]);
   }
   return typeOfUser(idI);
 };
@@ -163,15 +162,11 @@ int IdStorage::SerialReadToInt(byte c)
     }
 }
 
-unsigned int IdStorage::SerialReadToInt(byte c1, byte c2, byte c3, byte c4)
+unsigned int IdStorage::SerialReadToInt(byte c1, byte c2)
 {
     unsigned int n = SerialReadToInt(c1);
     n *= 16;
     n += SerialReadToInt(c2);
-    n *= 16;
-    n += SerialReadToInt(c3);
-    n *= 16;
-    n += SerialReadToInt(c4);
     return n;
 }
 

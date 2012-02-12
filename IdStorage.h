@@ -5,7 +5,7 @@
 #define UNKNOWN 0
 #define USER 1
 #define ADMIN 2
-#define ID_SIZE 3
+#define ID_SIZE 6
 
 class IdStorage {
   public:
@@ -25,7 +25,7 @@ class IdStorage {
     void dumpEEPROM();
     unsigned int ids[80][ID_SIZE];
     unsigned int idAdmin[ID_SIZE];
-    unsigned int SerialReadToInt(byte c1, byte c2, byte c3, byte c4);
+    unsigned int SerialReadToInt(byte c1, byte c2);
     int SerialReadToInt(byte c);
 
 };

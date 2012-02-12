@@ -7,7 +7,7 @@
  #include <ArduinoTestSuite.h>
  #include "TestIdStorage.h"
  #endif
- */
+*/
 #include "IdStorage.h"
 
 
@@ -42,7 +42,7 @@ NewSoftSerial mySerialPort(SerInToArdu,SerOutFrmArdu);
 //     programming, and for the output sent to the serial
 //     monitor.
 
-byte id[ID_SIZE];
+byte id[12];
 int bytePos = 0;
 int incomingByte=0;
 IdStorage theStorage;
@@ -56,14 +56,15 @@ void setup()
 {
   Serial.begin(9600);//For access to serial monitor channel
   Serial.println("Bring an RFID tag near the reader...");
+  delay(1000);
   mySerialPort.begin(9600);
   theStorage = IdStorage();
   myservo.attach(SERVO_PIN);
   myservo.write(90);
   pinMode(buttonPin,INPUT);
-  //theStorage.clear();
+  theStorage.clear();
   theStorage.printIds();
-  //IdStorageTest test;
+ // IdStorageTest test;
   setCorrectLight();
 
 
