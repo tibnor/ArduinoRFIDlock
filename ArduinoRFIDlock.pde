@@ -7,7 +7,7 @@
  #include <ArduinoTestSuite.h>
  #include "TestIdStorage.h"
  #endif
-*/
+ */
 #include "IdStorage.h"
 
 
@@ -21,6 +21,10 @@ const int SerOutFrmArdu=4; //Not used, but
 const int buttonPin = 8; // Digital pin for button
 int lastButton = HIGH;
 int currentButton = HIGH; 
+
+const int ACCESS_DENIED = 0;
+const int TOGGLE_DOORE_LOCK = 1;
+const int TOGGLE_ADMIN_MODE = 2;
 
 const int SERVO_PIN = 9;
 const int RED_LED_PIN = 6;   
@@ -55,7 +59,8 @@ byte state = STATE_DOOR_LOCK;
 void setup()
 {
   Serial.begin(9600);//For access to serial monitor channel
-  Serial.println("Bring an RFID tag near the reader...");
+  Serial.println("*******");
+  Serial.println("READY");
   delay(1000);
   mySerialPort.begin(9600);
   theStorage = IdStorage();
@@ -64,7 +69,7 @@ void setup()
   pinMode(buttonPin,INPUT);
   theStorage.clear();
   theStorage.printIds();
- // IdStorageTest test;
+  // IdStorageTest test;
   setCorrectLight();
 
 
@@ -72,60 +77,27 @@ void setup()
 
 void loop()
 {
+  // Check RFID reader
   while (mySerialPort.available() > 0) {
     // read the incoming byte from the serial buffer
     incomingByte = mySerialPort.read();
 
     if(incomingByte != 2 && incomingByte != 3) {
+      Serial.print(incomingByte);
       id[bytePos] = incomingByte;
       bytePos = bytePos + 1;
     }
-    if (incomingByte==3) {
+    else if (incomingByte==3) {
       bytePos = 0;
-
-      int userType = theStorage.typeOfUser(id);
-      Serial.print("Type of user: ");
-      switch (userType) {
-        case (USER):
-        Serial.println("USER");
-        break;
-        case (ADMIN):
-        Serial.println("ADMIN");
-        break;
-        case (UNKNOWN):
-        Serial.println("UNKNOWN");
-        break;
-      }
-
-      if (state == STATE_ADD_USER){
-        if (userType == UNKNOWN)
-          theStorage.storeId(id);
-        else if (userType == ADMIN){
-          setState(STATE_DOOR_LOCK);
-          Serial.println("State: door lock");
-        }
-
-        theStorage.printIds();
-      } 
-      else {
-        switch (userType) {
-          case (USER):
-          toggleDoorLock();
-          mySerialPort.flush();
-          break;
-          case (ADMIN):
-          setState(STATE_ADD_USER);
-          Serial.println("State: add user");
-          break;
-          case (UNKNOWN):
-          blinkLight(255, 0, 0, 300, 5);
-          Serial.println("Access denied!");
-          break;
-        }
-      }
-
+      Serial.println();
+    }
+    else if (incomingByte==2) {
+      bytePos = 0;
+      Serial.print("ID: ");
     }
   }
+
+  // Check lock button
   currentButton = debounce(lastButton);
   if (lastButton == HIGH && currentButton == LOW) {
     lastButton = currentButton;
@@ -133,6 +105,25 @@ void loop()
   }
   delay(5);
   lastButton = currentButton;
+
+  // Check usb
+  while (Serial.available() > 0) {
+    switch (Serial.read()) {
+    case '0':
+      blinkLight(255, 0, 0, 300, 5);
+      break;
+    case '1':
+      toggleDoorLock();
+      break;
+    case '2':
+      setState(STATE_DOOR_LOCK);
+      break;
+    case '3':
+      setState(STATE_ADD_USER);
+      break;  
+
+    }
+  }
 }
 
 void buttonLoop(){
@@ -305,6 +296,8 @@ void greenToRed(int waitTime) {
   }  
   delay(waitTime-waitedTime);
 }
+
+
 
 
 
