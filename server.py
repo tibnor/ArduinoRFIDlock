@@ -46,43 +46,34 @@ ser = connectToArduino()
 
 # Open user acount
 db = anydbm.open('brukere', 'c')
-db['1234567890'] = 'user'
-db['1234567899'] = 'admin'
 
 adminMode = False;
-pattern = re.compile(u'ID: (\d*)')
+getIdPattern = re.compile(u'ID: ([0-9A-F]*)')
+getUnlockingPattern = re.compile(u'Opening door')
+getLockingPattern = re.compile(u'Locking door')
+
+doorIsLocked = False
 while 1:
     try:
-        res = ser.readline()
-        res = pattern.findall(res)
+        incomming = ser.readline()
+        print 'A:'+incomming
+        res = getIdPattern.findall(incomming)
         if (res !=[]):
             id = str(res[0])
-            try:
-                type = db[id]
-                if (type=='admin'):
-                    if (adminMode):
-                        ser.write('2')
-                        adminMode = False
-                        print 'Switch to door lock mode mode'
-                    else:
-                        ser.write('3')
-                        adminMode = True
-                        print  'Switch to add user mode'
-                   
-                elif (type=='user'):
-                    print 'User: '+id
-                    ser.write('1')
-                else:
-                    ser.write('0')
-            except KeyError:
-                print "Id not found"
-                if(adminMode):
-                    db[id] = "user"
-                    print 'Added: |'+id+'|'
-                    #ser.write('1')
-                else:
-                    print 'Access denied: |'+id+'|'
-                    ser.write('0')
+            if (db.has_key(id)):
+                print 'Toggling door lock for: '+db[id]
+                ser.write('1')
+            else:
+                print 'User is not known, id: '+id
+                ser.write('0')
+        elif (getUnlockingPattern.match(incomming)):
+            doorIsLocked = False;
+        elif (getLockingPattern.match(incomming)):
+            doorIsLocked = True;
+
     except serial.serialutil.SerialException:
+        ser = connectToArduino()
+    except Exception, e:
+        print str(e)
         ser = connectToArduino()
 

@@ -1,6 +1,6 @@
 
 #include <NewSoftSerial.h>
-#include <EEPROM.h>
+//#include <EEPROM.h>
 #include <Servo2.h>
 /*#ifndef TEST
  #define TEST
@@ -8,7 +8,7 @@
  #include "TestIdStorage.h"
  #endif
  */
-#include "IdStorage.h"
+//#include "IdStorage.h"
 
 
 
@@ -49,7 +49,6 @@ NewSoftSerial mySerialPort(SerInToArdu,SerOutFrmArdu);
 byte id[12];
 int bytePos = 0;
 int incomingByte=0;
-IdStorage theStorage;
 
 
 #define STATE_ADD_USER 0
@@ -63,12 +62,9 @@ void setup()
   Serial.println("READY");
   delay(1000);
   mySerialPort.begin(9600);
-  theStorage = IdStorage();
   myservo.attach(SERVO_PIN);
   myservo.write(90);
   pinMode(buttonPin,INPUT);
-  theStorage.clear();
-  theStorage.printIds();
   // IdStorageTest test;
   setCorrectLight();
 
@@ -77,26 +73,27 @@ void setup()
 
 void loop()
 {
+  //Serial.println("start loop");
   // Check RFID reader
   while (mySerialPort.available() > 0) {
     // read the incoming byte from the serial buffer
     incomingByte = mySerialPort.read();
-
+    //Serial.println("got rfid data");
     if(incomingByte != 2 && incomingByte != 3) {
-      Serial.print(incomingByte);
+      Serial.print(incomingByte,BYTE);
       id[bytePos] = incomingByte;
       bytePos = bytePos + 1;
     }
     else if (incomingByte==3) {
       bytePos = 0;
-      Serial.println();
+      Serial.print('\n');
     }
     else if (incomingByte==2) {
       bytePos = 0;
       Serial.print("ID: ");
     }
   }
-
+ 
   // Check lock button
   currentButton = debounce(lastButton);
   if (lastButton == HIGH && currentButton == LOW) {
@@ -110,16 +107,19 @@ void loop()
   while (Serial.available() > 0) {
     switch (Serial.read()) {
     case '0':
-      blinkLight(255, 0, 0, 300, 5);
+      Serial.println("Access denied");
+      blinkLight(255, 0, 255, 300, 5);
       break;
     case '1':
       toggleDoorLock();
       break;
     case '2':
       setState(STATE_DOOR_LOCK);
+      Serial.println("Set to door lock mode");
       break;
     case '3':
       setState(STATE_ADD_USER);
+      Serial.println("Set to add user mode");
       break;  
 
     }
@@ -239,12 +239,12 @@ void setCorrectLight(){
       changeColor(0,GREEN_INTENSITY,0);
     } 
     else {
-      changeColor(RED_INTENSITY,0,0);
+      changeColor(RED_INTENSITY,0,RED_INTENSITY);
       analogWrite(INTERNAL_LED,100);
     }
   } 
   else {
-    changeColor(0,0,255);
+    changeColor(255,255,255);
   }
 }
 
@@ -255,6 +255,7 @@ void blinkLight(int red, int green, int blue, int period, int cycles) {
     changeColor(0,0,0);
     delay(period/2);
   }  
+  setCorrectLight();
 }
 
 
@@ -264,13 +265,13 @@ void redToGreen(int waitTime) {
   int waitedTime = 0;
   for (int i = 0; i<RED_INTENSITY; i++) {
     red --; 
-    changeColor(red,green,0);
+    changeColor(red,green,red);
     delay(2);
     waitedTime = waitedTime + 2;
   }  
   for (int i = 0; i<255; i++) {
     green ++;
-    changeColor(red,green,0);
+    changeColor(red,green,red);
     delay(1);
     waitedTime++;
   } 
@@ -284,13 +285,13 @@ void greenToRed(int waitTime) {
   int waitedTime = 0;
   for (int i = 0; i<GREEN_INTENSITY; i++) {
     green --; 
-    changeColor(red,green,0);
+    changeColor(red,green,red);
     delay(2);
     waitedTime = waitedTime + 2;
   }  
   for (int i = 0; i<255; i++) {
     red ++;
-    changeColor(red,green,0);
+    changeColor(red,green,red);
     delay(1);
     waitedTime++;
   }  
