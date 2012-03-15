@@ -2,6 +2,8 @@ import serial
 import anydbm
 import re
 import os
+import time
+import sqlite3
 
 def connectToArduino():
     print 'Waiting for arduino to connect'
@@ -18,7 +20,7 @@ def connectToArduino():
         ser = None
         for d in acm:
             try:
-                ser = serial.Serial('/dev/'+d, 9600)
+                ser = serial.Serial('/dev/'+d, 9600,timeout=0.1)
                 break
             except serial.serialutil.SerialException:
                 pass
@@ -40,9 +42,20 @@ def connectToArduino():
             ser = connectToArduino()
     return ser
 
+def getMobileOpen(dbMobile):
+    while 1:
+        try:
+            cursor = dbMobile.execute('select value from commands where command = "mobileOpen"')
+            res = cursor.fetchone()
+            cursor.close()
+            return res[0]
+        except sqlite3.OperationalError:
+            pass    
+
 
 ser = connectToArduino()
-
+dbMobile = sqlite3.connect('/var/www/users', check_same_thread = False)
+lastMobileOpen = getMobileOpen(dbMobile)
 
 # Open user acount
 db = anydbm.open('brukere', 'c')
@@ -56,7 +69,8 @@ doorIsLocked = False
 while 1:
     try:
         incomming = ser.readline()
-        print 'A:'+incomming
+        if (incomming != ""):
+            print 'A:'+incomming
         res = getIdPattern.findall(incomming)
         if (res !=[]):
             id = str(res[0])
@@ -76,4 +90,10 @@ while 1:
     except Exception, e:
         print str(e)
         ser = connectToArduino()
+    
 
+    if (lastMobileOpen < getMobileOpen(dbMobile)):
+        print 'Toggling door lock for: mobile'
+        ser.write('1')
+        lastMobileOpen = getMobileOpen(dbMobile)
+    time.sleep(.1)
